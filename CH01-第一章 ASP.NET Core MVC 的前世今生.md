@@ -7,9 +7,7 @@ ASP.NET Core MVC 是一个微软公司开发的Web应用程序开发框架，它
 
 最初的ASP.NET 诞生在2002年，那个时候，微软想要保持传统的桌面应用开发的霸主地位，又看出了因特网是一个潜在的威胁。下图展示了当时的微软的技术栈。
 
-
-
-
+![Asp.net web forms 技术栈](imgs/fig1-1.png)
 
 
 图1.1 ASP.NET Web Forms 技术栈
