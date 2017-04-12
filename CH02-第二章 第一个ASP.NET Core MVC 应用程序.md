@@ -1,6 +1,8 @@
-第二章 第一个MVC 应用程序
+# 第二章 第一个MVC 应用程序(待续)
+
 学习一个软件开发框架的最好方法是跳进他的内部并使用它。在本章，你将用ASP.NET Core MVC创建一个简单的数据登录应用。我将它一步一步地展示，以便你能看清楚怎样构建一个MVC 应用程序。为了让事情简单，我跳过了一些技术细节，但是不要担心，如果你是一个MVC的新手，你将会发现许多东西足够提起你的兴趣。因为我用的东西有些没做解释，所以我提供了一些参考以便你可以看到所有的细节的东西。
-安装Visual Studio
+
+## 安装Visual Studio
 要想根据本书实践的话，必须安装Visual studio 2015，它提供了你需要ASP.NET Core MVC开发的所有的东西。我用的是免费的Visual Studio 2015 Community 版，你可以在www.visualstudio.com这里下载它。安装的时候，一定要确保选中了Microsoft web Web Develooper Tools 选项。
 
 提示：Visual Studio 仅支持Windows 平台，在其他平台上，你可以使用Visual Studio Code 来开发，但是它没有提供本书中示例程序所需要的全部工具，关于这些，请参见第13章。
@@ -23,7 +25,8 @@ Visual Studio 包含了他自己版本的git,但是不太好用，并且有时�
 
 
 
-建立一个新的ASP.NET Core MVC工程(Project)
+## 建立一个新的ASP.NET Core MVC工程(Project)
+
 我将在Visual Studio里建立一个新的ASP.NET Core MVC工程。在Visual Studio内， 从菜单中选择New -> Project 来打开新工程的对话框。如果在左边栏中导航到 Template->Visual C#->Web项，你将看到ASP.NET Web Application(.Net Core)工程模板，选中这个工程类型，如图2-3所示。
 
 
@@ -63,7 +66,7 @@ Web Application (.NET Framework) 模板用于使用ASP.NET 和ASP.NET MVC框架�
 
 从这里开始，我将在本书中使用Google Chrome 或Google Chrome Canary 来截屏。但是你可以使用任何现代浏览器来显示本书中的例子，包括Microsoft Edge 和最新版的Internet Explorer。
 
-加入控制器(Controller)
+## 加入控制器(Controller)
 
 在MVC 模式里，传入的请求被控制器(Controller)处理，在ASP.NET Core MVC,控制器只是一个类，同城继承自内建的MVC控制器基类Microsoft.AspNetCore.Mvc.Controller。
 控制器中每一个公共方法都叫做动作(action)方法。意思是你可以通过一些URL从Web上英法一个动作。按照MVC的传统约定，控制器类一般都放入controllers文件夹内，这个文件夹是由Visual Studio 在创建工程的时候建立的。
@@ -119,7 +122,7 @@ return "Hello World";
 
 提示：请注意，图中Visual Studio已经将浏览器指向了端口57628。你看到你的浏览器上的URL端口号几乎肯定与图上不同。因为VS在创建工程的时候会随机分配端口。如果你看到Windows任务条上通知区域，你会发现一个IIS Express 的图标，它是一个简化的IIS 应用程序服务器的版本，随着VS 一起来的，用于在开发的时候交付ASP.NET 内容和提供服务。在第12章，我将会告诉你如何发布一个MVC工程到生产环境。
 
-理解路由
+## 理解路由
 除了Model,View和控制器，MVC 应用也会使用ASP.NET 路由系统，它合同决定URL如何映射到Controller和Action。路由是一个用来决定如和处理请求的规则。当VS创建MVC项目时，它帮你加了一些默认的路由。你可以请求下列URL，它们都会指向HomeController中的 Index action 。
 ?/
 ?/Home
@@ -129,7 +132,7 @@ return "Hello World";
 
 这是一个遵循ASP.NET Core MVC实现的约定的很好的例子，这个约定是：我将有一个叫做HomeController的控制器，它是MVC应用的入口点。 默认的VS 配置中，当它要创建一个新的MVC应用时，它会假定我们遵循这个约定。因为我遵循这个约定，我会自动的到前面列表的支持，如果我不遵循这个约定，我将必须修改配置以指向其他的Controller。 对于这个简单的例子来说，默认的配置是我所需要的。
 
-渲染Web页面
+## 渲染Web页面
 前面例子里输出的不是HTML，他只是简单的”Hello World” 字符串。要想给浏览器产生HTML相应，我需要一个View，它将会告诉MVC如何为一个请求生成响应。
 建立并渲染一个View
 第一件事我需要做的是修改Index action方法，如程序2-3。我做的改动用加粗的字体显示了，也是使用了一个让例子变得很简单的约定。
@@ -196,7 +199,7 @@ Layout = null;
 
 除了字符串和ViewResult ,我还可以让Action方法返回其它类型。例如如果我返回一个RedirectResult,浏览器将重定向到另一个URL。如果我返回一个HttpUnauthorizedResult，I会强迫用户登录。这些对象被叫做Action result的集合控制。Action Result系统让你封装并重用通用的action返回。在17章，我会介绍更多的相关内容。
 
-增加动态输出
+## 增加动态输出
 
 整个web应用平台的关注点在于构建并显示动态输出内容。在MVC里，控制器负责构建一些数据并将其传给视图。视图负责渲染成HTML。
 从控制器向视图传递数据的一种方式是使用ViewBag 对象，它是一个控制器基类的成员。ViewBag是一个动态对象，你可以给他赋值任意属性给视图来渲染用。代码2-5 演示了如何在HomeController里传递简单对象。
@@ -238,4 +241,4 @@ Greeting这个属性名字没有什么特殊的东西，你可以使用任何其
 
 图2-13 一个MVC的动态响应
 
-创建一个简单的数据录入
+## 创建一个简单的数据录入
