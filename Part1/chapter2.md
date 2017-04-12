@@ -258,4 +258,145 @@ Greeting这个属性名字没有什么特殊的东西，你可以使用任何其
 
 图2-13 一个MVC的动态响应
 
-## 创建一个简单的数据录入
+## 创建一个简单的数据录入应用
+在本章的剩下的部分，我将通过构建一个简单的数据录入应用来探索更多的基本MVC特征。这一节，我将会加快点速度。我的目标是用action来演示MVC，所以我将略过去一些讲解有些东西的内部原理。但是不要担心，我将会在以后的章节中讨论那些内容的。
+
+#### 设置场景
+想像一下，一个朋友决定了要举行一个新年晚会，他请我建立一个web 应用来跟踪它通过电子邀请函邀请的朋友。她需要以下四个关键功能：
+####
+* 一个关于这场晚会的信息的主页。
+* 一个可以填写邀请函的窗体。
+* 填写邀请函的时候需要验证，还要显示感谢页。
+* 一个总结页面，用来显示谁将会参加这个晚会。
+
+在接下来的段落里，我将在前面MVC工程的基础上逐渐增加内容，增加那些功能。第一步，我将马上就实现列表中的第一项，因为前面已经做了一些工作，只需要向现有的视图增加一些HTML来给出晚会的信息即可。代码2-7 显示了我向Views/Home/MyView.cshtml文件中增加的内容。
+
+Listing 2-7. 显示晚会明细
+
+```html
+@{
+Layout = null;
+}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Index</title>
+    </head>
+    <body>
+    <div>
+        @ViewBag.Greeting World (from the view)
+        <p>We're going to have an exciting party.<br />
+            (To do: sell it better. Add pictures or something.)
+        </p>
+    </div>
+    </body>
+</html>
+```
+
+我继续。 如果你运行，你会看见晚会的信息，（额，还是一些占位符，但是你已经明白了吧）如图2-14.
+
+![向视图里增加HTML](/imgs/fig.2-14.png)
+图 2-14 向视图里增加HTML
+
+## 增加一个数据模型
+在MVC里，M 代表模型， 他是应用程序里最重要的部分。模型是真实世界对象的代表，处理，定义领域的规则。模型经常被称为是领域模型，包含C# 对象（领域对象）构成应用程序的世界和操纵他们的方法。视图和控制器会将领域用一致的方式暴露给客户端，并且，一个设计良好的MVC应用程序应该从一个设计良好的模型开始。然后控制器和视图才加入。
+
+在PartyInvites工程里，我不需要复杂的模型，因为这是一个非常简单的应用，我只需要建立一个领域类，然后我将会调用GuestResponse.这个对象将负责保存，验证和确认一个邀请函。
+
+MVC的约定一般把模型放在Models文件夹里，要建立这个文件夹，右击PartyInvites工程，从菜单中选择Add->New Folder ，然后设置名字为Models。
+
+注意: 当程序运行时，你不能设置一个文件夹的名字。你可以从Debug菜单里选择Stop Debugging,右击你已经加入的NewFolder项，然后从弹出菜单中选择Rename，然后改成Models。
+
+要建立一个类文件，右击Models文件夹，然后在弹出菜单里选择Add->Class。 设置新的类名字为GuestResponse.cs ，然后单击Add按钮，编辑新类的内容为代码2-8.
+
+Listing 2-8 GuestResponse 领域类定义
+```csharp
+namespace PartyInvites.Models {
+    public class GuestResponse {
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Phone { get; set; }
+    public bool? WillAttend { get; set; }
+    }
+}
+```
+
+提示: 你可能已经注意到了 WillAttend 属性是一个可空的bool型，意思是它可以是true,false,或null。我将解释她的基本原理在本章的"增加校验"节。
+
+## 建立第二个Action和强类型的视图
+我的应用程序的一个目标是包含一个邀请函窗体，也就是我将要定义一个行动（action）方法可以为它接收请求。一个单独的控制器类可以定义多个行动方法，默认约定是将相关的行动放到同一个控制器内。代码2-9展现了Home 控制器中新增加的行动方法。
+
+```csharp
+Listing 2-9. Adding an Action Method in the HomeController.cs File
+using System;
+using Microsoft.AspNetCore.Mvc;
+namespace PartyInvites.Controllers {
+    public class HomeController : Controller {
+        public ViewResult Index() {
+            int hour = DateTime.Now.Hour;
+            ViewBag.Greeting = hour < 12 ? "Good Morning" : "Good Afternoon";
+                return View("MyView");
+            }
+            
+            public ViewResult RsvpForm() {
+                return View();
+            }
+    }
+}
+```
+RsvpForm 行动方法调用View方法，不带参数，这将会告诉MVC取渲染连接于该行动方法的默认的视图，与行动方法的名字相同，在这里是RsvpForm.cshtml。
+右击Views->Home 文件夹并在弹出菜单中选择Add->New Item。从ASP.NET 分类里选择MVC View Page模板，设置新的名字为RsvpForm.cshtml，并点击Add 按钮来创建文件。修改该文件的内容，让他变成代码 2-10那样。
+
+Listing 2-10. 设置视图文件
+
+```html
+@model PartyInvites.Models.GuestResponse
+@{
+Layout = null;
+}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+    <title>RsvpForm</title>
+    </head>
+    <body>
+        <div>
+            This is the RsvpForm.cshtml View
+        </div>
+    </body>
+</html>
+```
+上面内容大部分为HTML，中间夹杂有@model Razor表达式，用来创建一个强类型的视图。强类型的视图用来渲染特定类型的模型，如果我指定一个类型（本例中，GuestResponse类），MVC可以创建一些有用的快捷方式并使它更容易。一会儿我将利用强类型的特征。
+要测试新的行动方法和它的视图，启动应用程序，并使用浏览器浏览/Home/RsvpForm 。
+MVC将使用命名约定来重定向请求到Home控制器中的RsvpForm行动方法。这个行动方法告诉MVC去渲染默认的视图，这里又使用了另一个命名规范，渲染RsvpForm.cshtml。图2-15展示了结果。
+
+![渲染第二个视图](imgs/fig.2-15.png)
+图2-15 渲染第二个视图
+
+## 连接行动方法
+我想要从MyView视图内建立一个连接，以便我的客人能够看见RsvpForm视图而不必知道URL。如代码2-11。
+
+Listing 2-11. 在MyView.cshtml里增加一个连接 
+```html
+@{
+Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width" />
+<title>Index</title>
+</head>
+<body>
+<div>
+@ViewBag.Greeting World (from the view)
+<p>We're going to have an exciting party.<br />
+(To do: sell it better. Add pictures or something.)
+</p>
+<a asp-action="RsvpForm">RSVP Now</a>
+</div>
+</body>
+</html>
+```
