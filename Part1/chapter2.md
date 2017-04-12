@@ -15,13 +15,13 @@
 最后一步，你必须下载安装git，在这里可以下载：https://git-scm.com/download。
 Visual Studio 包含了他自己版本的git,但是不太好用，并且有时候会产生难以预料的东西。例如和其他工具如Bower一起使用的时候。我在第6章会讲述Bower。当你安装git的时候，要告诉安装器，把这个工具加入PATH环境变量中，以确保Visual Studio 能够找到新版本的git。
 
-![将git加入path](./imgs/fig.2-1.png)
+![将git加入path](/imgs/fig.2-1.png)
 
 图2-1 将git加入path。
 
 启动Visual Studio ，选择Tools-> Options ，导航到项目和解决方案 -> 展开Web Tools 项，如图2-2。去掉勾选$(VSINSTALLDIR)\Web\External\Git 以让Visual Studio自带的版本失效，但是要确保$(Path)项是有效的，以使用刚刚安装的版本。
 
-![配置git](./imgs/fig.2-2.png)
+![配置git](/imgs/fig.2-2.png)
 
 图2-2 在Visual Studio里配置git。
 
@@ -32,7 +32,7 @@ Visual Studio 包含了他自己版本的git,但是不太好用，并且有时�
 
 我将在Visual Studio里建立一个新的ASP.NET Core MVC工程。在Visual Studio内， 从菜单中选择New -> Project 来打开新工程的对话框。如果在左边栏中导航到 Template->Visual C#->Web项，你将看到ASP.NET Web Application(.Net Core)工程模板，选中这个工程类型，如图2-3所示。
 
-![应用工程模板](imgs/fig.2-3.png)
+![应用工程模板](/imgs/fig.2-3.png)
 图2-3 Visual Studio Core Web应用工程模板
 
 提示: 选择项目模板时可能会有点困惑，因为它们几个很类似。这里解释一下：ASP.NET
@@ -40,7 +40,7 @@ Web Application (.NET Framework) 模板用于使用ASP.NET 和ASP.NET MVC框架�
 
 为新工程设置名字为PartyInvites 并且确保Add Application Insights to Project 选项不被选中。如图2-3。 点击OK 按钮继续，然后你会看到另一个对话框，如图2-4，他将让你设置项目的初始内容。
 
-![选择初始项目配置](imgs/fig.2-4.png)
+![选择初始项目配置](/imgs/fig.2-4.png)
 图2-4 选择初始项目配置
 
 这里有三个ASP.NET Core 模板选项，每个都使用不同的初始内容建立一个工程。 对本章来说，选择Web Application选项，这个选项可以使用预定义的内容建立一个MVC 应用来开始开发。
@@ -49,19 +49,19 @@ Web Application (.NET Framework) 模板用于使用ASP.NET 和ASP.NET MVC框架�
 
 点击 Change Authentication 按钮，选择上No Authentication 选项，如图2-5。这个工程不需要身份验证，但是我会在第28-30章阐述如何保证ASP.NET 应用程序的安全。
 
-![选择身份验证设置](imgs/fig.2-5.png)
+![选择身份验证设置](/imgs/fig.2-5.png)
 
 图2-5 选择身份验证设置
 
 点击OK 关闭 Change Authentication 对话框。 确保Host in the Cloud 没有被选中，然后单击OK ，建立PartyInvites 工程。 一旦Visual Studio 创建完工程，你将看到一些文件和文件夹在解决方案窗口中显示出来，如图2-6。这是使用Web应用程序模板创建的新MVC 项目的默认结构。你将很快就能明白这里的每一个文件和文件夹的作用。
 
-![初始文件和文件夹](imgs/fig.2-6.png)
+![初始文件和文件夹](/imgs/fig.2-6.png)
 
 图2-6 ASP.NET Core MVC 工程中初始的文件和文件夹结构
 
 你可以从Debug 菜单中选择Start Debugging，(如果它提示你打开调试，点击OK 按钮就是)，你这样做了，Visual Studio 编译生成本应用程序，然后使用叫做IIS的应用程序服务器来运行它，然后打开Web浏览器请求应用的内容，你会看到下面结果，如图2-7。
 
-![运行](imgs/fig.2-7.png)
+![运行](/imgs/fig.2-7.png)
 
 图2-7 运行例子工程
 
@@ -70,7 +70,7 @@ Web Application (.NET Framework) 模板用于使用ASP.NET 和ASP.NET MVC框架�
 当你做完了上面这些步骤，如果浏览器显示错误信息，请关闭浏览器窗口以停止调试。或者回到Visual Studio，在Debug菜单里选择Stop Debugging。
 就像你刚才看到的那样，Visual Studio打开浏览器以显示工程。你可以在Web Browser菜单中，单击IIS Express的右侧箭头并从选项列表中选择浏览器的方式选择任何一个你已经安装的浏览器。如图2-8。
 
-![选择浏览器](imgs/fig.2-8.png)
+![选择浏览器](/imgs/fig.2-8.png)
 图2-8 选择一个浏览器
 
 从这里开始，我将在本书中使用Google Chrome 或Google Chrome Canary 来截屏。但是你可以使用任何现代浏览器来显示本书中的例子，包括Microsoft Edge 和最新版的Internet Explorer。
@@ -126,7 +126,7 @@ return "Hello World";
 
 浏览器将会发起一个HTTP请求到服务器。默认的MVC配置规定了这个请求将被Index方法（叫做Action方法或就叫做Action）处理，该方法的结果会发回之浏览器，如图2-9显示的那样。
 
-![Action输出](imgs/fig.2-9.png)
+![Action输出](/imgs/fig.2-9.png)
 
 图2-9  Action 方法的输出
 
@@ -158,7 +158,7 @@ return View("MyView");
 }
 当我从一个Action方法返回ViewResult 对象时，我指示MVC去渲染一个view。我通过调用View方法来创建一个ViewResult对象，调用时要制定View的名字MyView。如果你运行这个应用程序，你会发现MVC会试图寻找这个View，会出现如下图2-10所显示的错误信息。
 
-![寻找视图](imgs/fig.2-10.png)
+![寻找视图](/imgs/fig.2-10.png)
 
 图2-10 MVC试图寻找一个view
 
@@ -166,7 +166,7 @@ return View("MyView");
 
 要建立View，在解决方案浏览器窗口内，右键单击Views->Home，并在弹出菜单中选择Add -> New Item。VS 汇给你展示出来一些项模板，在左侧栏选择ASP.NET 类别然后在中间栏选择MVC View Page 项。如图2-11。
 
-![建立View](imgs/fig.2-11.png)
+![建立View](/imgs/fig.2-11.png)
 
 图2-11 建立View
 
@@ -206,7 +206,7 @@ Layout = null;
 }
 这是一个被Razor View引擎解释的表达式，它会处理View的内容并生成发回给浏览器中的HTML。这是一个简单的Razor表达式，他会告诉Razor我选择不使用layout。Layout是一个HTML模板，我将在第五章讲解它。我将忽略Razor，过一会在回来。想要看效果，请点击Start Debugging 来运行应用程序。你将会看到图2-12中的结果。
 
-![测试View](imgs/fig.2-12.png)
+![测试View](/imgs/fig.2-12.png)
 
 图2-12 测试View
 
@@ -254,7 +254,7 @@ Layout = null;
 
 Greeting这个属性名字没有什么特殊的东西，你可以使用任何其他的名字，并且一样好用。只要你在控制器中的名字与视图中的名字相同即可。你可以使用多个属性来传递多个数据。然后你运行一下看一下效果，如图2-13。
 
-![动态响应](imgs/fig.2-13.png)
+![动态响应](/imgs/fig.2-13.png)
 
 图2-13 一个MVC的动态响应
 
