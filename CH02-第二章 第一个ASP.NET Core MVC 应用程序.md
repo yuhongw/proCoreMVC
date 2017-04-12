@@ -1,4 +1,4 @@
-# 第二章 第一个MVC 应用程序(待续)
+.# 第二章 第一个MVC 应用程序(待续)
 
 学习一个软件开发框架的最好方法是跳进他的内部并使用它。在本章，你将用ASP.NET Core MVC创建一个简单的数据登录应用。我将它一步一步地展示，以便你能看清楚怎样构建一个MVC 应用程序。为了让事情简单，我跳过了一些技术细节，但是不要担心，如果你是一个MVC的新手，你将会发现许多东西足够提起你的兴趣。因为我用的东西有些没做解释，所以我提供了一些参考以便你可以看到所有的细节的东西。
 
@@ -15,13 +15,13 @@
 最后一步，你必须下载安装git，在这里可以下载：https://git-scm.com/download。
 Visual Studio 包含了他自己版本的git,但是不太好用，并且有时候会产生难以预料的东西。例如和其他工具如Bower一起使用的时候。我在第6章会讲述Bower。当你安装git的时候，要告诉安装器，把这个工具加入PATH环境变量中，以确保Visual Studio 能够找到新版本的git。
 
-![将git加入path](imgs/fig.2-1.png)
+![将git加入path](./imgs/fig.2-1.png)
 
 图2-1 将git加入path。
 
 启动Visual Studio ，选择Tools-> Options ，导航到项目和解决方案 -> 展开Web Tools 项，如图2-2。去掉勾选$(VSINSTALLDIR)\Web\External\Git 以让Visual Studio自带的版本失效，但是要确保$(Path)项是有效的，以使用刚刚安装的版本。
 
-![配置git](imgs/fig.2-2.png)
+![配置git](./imgs/fig.2-2.png)
 
 图2-2 在Visual Studio里配置git。
 
