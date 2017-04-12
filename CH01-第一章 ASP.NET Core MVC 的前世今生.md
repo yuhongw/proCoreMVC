@@ -1,6 +1,6 @@
 回目录
 
-第一章 ASP.NET Core MVC 的前世今生
+#第一章 ASP.NET Core MVC 的前世今生
 
 ASP.NET Core MVC 是一个微软公司开发的Web应用程序开发框架，它结合了MVC架构的高效性和简洁性，敏捷开发的思想和技术和.NET 平台的最好的部分。在本章，我们将学习为什么微软创建ASP.NET Core MVC, 看看他和他的前辈的比较以及和其他类似框架的比较，最后，大概讲一下ASP.NET Core MVC里面有什么新东西，还有本书中包括哪些内容。
 了解ASP.NET Core MVC的历史
@@ -15,7 +15,8 @@ ASP.NET Core MVC 是一个微软公司开发的Web应用程序开发框架，它
 图1.1 ASP.NET Web Forms 技术栈
 
 
-ASP.NET Web Forms
+###ASP.NET Web Forms
+
 微软当时试图使用Web Forms技术来隐藏超文本传输协议（HTTP），和与生俱来的无状态性；而且在当时，HTML 对许多程序原来说时陌生的，所以WebForms 使用用户控件在服务器端进行UI建模。 每个控件在各个请求之间跟踪着自己的状态，在需要的时候渲染成HTML，还有自动连接客户端事件（例如按钮的单击事件）以在服务器端执行响应代码。实际上，Web Forms 是一个巨大的抽象层，用来在Web上实现事件驱动的图形用户界面。
 
 这个想法是基于想让Web开发的感觉就像开发桌面应用程序一样的理念。开发人员可以用有状态UI来思考并且不需要一系列无关的HTTP请求和响应。 微软可以无痛地将Windows桌面开发大军转向新的Web开发的世界。
