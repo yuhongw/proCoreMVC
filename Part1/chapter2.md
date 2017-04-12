@@ -85,6 +85,7 @@ Web Application (.NET Framework) 模板用于使用ASP.NET 和ASP.NET MVC框架�
 Visual Studio 在项目里加入了默认的Controller 类，如果你在解决方案浏览器窗口扩展开Controllers 文件夹就会看到。默认的Controller叫做HomeController.cs。控制器类名字是以Controller结尾的，意思是当你看到HomeController.cs文件时，就知道他是一个叫做Home的控制器(Controller)，HomeController是MVC应用的默认控制器。单击HomeController.cs 文件你可以编辑它。你会看到List 2-1所示的代码。
 
 List 2-1. HomeController的初始内容
+```cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -108,9 +109,11 @@ return View();
 }
 }
 }
+```
 用下面List 2-2的内容替换HomeController.cs文件中原来的代码。这里，我只保留了一个方法，更改了结果类型和他的实现，并移除了那些不需要的using语句。
 
 Listing 2-2. 更改 HomeController.cs 
+```cs
 using Microsoft.AspNetCore.Mvc;
 namespace PartyInvites.Controllers {
 public class HomeController : Controller {
@@ -119,6 +122,7 @@ return "Hello World";
 }
 }
 }
+```
 
 这些更改没有动态效果，但是是一个很好的演示。我已经更改了Index方法让他返回“Hello World”。现在，点击Debug -> Start Debugging菜单再次运行项目。
 
@@ -134,9 +138,10 @@ return "Hello World";
 
 ## 理解路由
 除了Model,View和控制器，MVC 应用也会使用ASP.NET 路由系统，它合同决定URL如何映射到Controller和Action。路由是一个用来决定如和处理请求的规则。当VS创建MVC项目时，它帮你加了一些默认的路由。你可以请求下列URL，它们都会指向HomeController中的 Index action 。
-?/
-?/Home
-?/Home/Index
+
+* /
+* /Home
+* /Home/Index
 
 因此，当一个浏览器请求http://yoursite/ 或者 http://yoursite/Home 它都会从HomeController 的Index方法返回结果。 你可以自己试一下在浏览器中改变URL，假设现在是http://localhost:57628,如果你在URL后面添加 /Home 或 /Home/Index 然后按回车键，你将会看见同样的Hello World 结果。
 
@@ -148,6 +153,7 @@ return "Hello World";
 第一件事我需要做的是修改Index action方法，如程序2-3。我做的改动用加粗的字体显示了，也是使用了一个让例子变得很简单的约定。
 
 Listing 2-3. 修改Action
+```cs
 using Microsoft.AspNetCore.Mvc;
 namespace PartyInvites.Controllers {
 public class HomeController : Controller {
@@ -156,6 +162,7 @@ return View("MyView");
 }
 }
 }
+```
 当我从一个Action方法返回ViewResult 对象时，我指示MVC去渲染一个view。我通过调用View方法来创建一个ViewResult对象，调用时要制定View的名字MyView。如果你运行这个应用程序，你会发现MVC会试图寻找这个View，会出现如下图2-10所显示的错误信息。
 
 ![寻找视图](/imgs/fig.2-10.png)
@@ -177,7 +184,7 @@ return View("MyView");
 提示:很容易在错误的文件夹中创建view文件，如果你没有最终在Views/Home里创建MyView.cshtml，将他们删除然后再创建就可以。
 
 Listing 2-4. 替换 MyView.cshtml 文件内容
-
+``` html
 @{
 Layout = null;
 }
@@ -193,17 +200,20 @@ Hello World (from the view)
 </div>
 </body>
 </html>
+```
 The new contents of the view file are mostly HTML. The exception is the part that looks like this:
-...
+```html
 @{
 Layout = null;
 }
-...
+```
 
 新的View文件中的内容大部分都是HTML,除了这一部分：
+```html
 @{
 Layout = null;
 }
+```
 这是一个被Razor View引擎解释的表达式，它会处理View的内容并生成发回给浏览器中的HTML。这是一个简单的Razor表达式，他会告诉Razor我选择不使用layout。Layout是一个HTML模板，我将在第五章讲解它。我将忽略Razor，过一会在回来。想要看效果，请点击Start Debugging 来运行应用程序。你将会看到图2-12中的结果。
 
 ![测试View](/imgs/fig.2-12.png)
@@ -219,6 +229,7 @@ Layout = null;
 整个web应用平台的关注点在于构建并显示动态输出内容。在MVC里，控制器负责构建一些数据并将其传给视图。视图负责渲染成HTML。
 从控制器向视图传递数据的一种方式是使用ViewBag 对象，它是一个控制器基类的成员。ViewBag是一个动态对象，你可以给他赋值任意属性给视图来渲染用。代码2-5 演示了如何在HomeController里传递简单对象。
 Listing 2-5. 设置视图数据
+```cs
 using System;
 using Microsoft.AspNetCore.Mvc;
 namespace PartyInvites.Controllers {
@@ -230,10 +241,12 @@ return View("MyView");
 }
 }
 }
+```
 
 我向ViewBag.Greeting属性赋值，以给视图提供数据。Greeting属性在赋值之前是不存在的，这允许我以任意流畅的方式从控制器向视图传递数据而不必在赋值之前定义类。我在视图中引用了ViewBag.Greeting属性以获得他的值。如同代码2-6，这是修改后的MyView.cshtml。
 
 Listing 2-6. 在视图里获取传递过来的值
+```html
 @{
 Layout = null;
 }
@@ -249,7 +262,7 @@ Layout = null;
 </div>
 </body>
 </html>
-
+```
 上面代码增加的部分是Razor表达式，它在MVC 使用视图生成相应的时候求值。当我在控制器内调用View方法的时候，MVC找到MyView.cshtml文件并请求Razor 视图引擎解析文件的内容。Razor 会查找象上面代码中的表达式。在本例中，处理表达式的意思是将ViewBag.Greeting属性插入到视图中。
 
 Greeting这个属性名字没有什么特殊的东西，你可以使用任何其他的名字，并且一样好用。只要你在控制器中的名字与视图中的名字相同即可。你可以使用多个属性来传递多个数据。然后你运行一下看一下效果，如图2-13。
@@ -311,7 +324,7 @@ MVC的约定一般把模型放在Models文件夹里，要建立这个文件夹�
 要建立一个类文件，右击Models文件夹，然后在弹出菜单里选择Add->Class。 设置新的类名字为GuestResponse.cs ，然后单击Add按钮，编辑新类的内容为代码2-8.
 
 Listing 2-8 GuestResponse 领域类定义
-```csharp
+```cs
 namespace PartyInvites.Models {
     public class GuestResponse {
     public string Name { get; set; }
@@ -327,7 +340,7 @@ namespace PartyInvites.Models {
 ## 建立第二个Action和强类型的视图
 我的应用程序的一个目标是包含一个邀请函窗体，也就是我将要定义一个行动（action）方法可以为它接收请求。一个单独的控制器类可以定义多个行动方法，默认约定是将相关的行动放到同一个控制器内。代码2-9展现了Home 控制器中新增加的行动方法。
 
-```csharp
+```cs
 Listing 2-9. Adding an Action Method in the HomeController.cs File
 using System;
 using Microsoft.AspNetCore.Mvc;
@@ -372,7 +385,8 @@ Layout = null;
 要测试新的行动方法和它的视图，启动应用程序，并使用浏览器浏览/Home/RsvpForm 。
 MVC将使用命名约定来重定向请求到Home控制器中的RsvpForm行动方法。这个行动方法告诉MVC去渲染默认的视图，这里又使用了另一个命名规范，渲染RsvpForm.cshtml。图2-15展示了结果。
 
-![渲染第二个视图](imgs/fig.2-15.png)
+![渲染第二个视图](/imgs/fig.2-15.png)
+
 图2-15 渲染第二个视图
 
 ## 连接行动方法
