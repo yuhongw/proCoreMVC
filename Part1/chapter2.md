@@ -414,3 +414,113 @@ Layout = null;
 </body>
 </html>
 ```
+代码中增加的部分是一个具有asp-action属性的`<a>`标记。这是一个标记帮助器（tag helper)属性，他是一个给Razor的指令，在视图渲染的时候执行。这里的asp-action属性是用来给`<a>`标记增加一个href属性，包含指向一个行动方法的URL。我将会在第24,25和26章结束适合使用标记帮助器。但是这里是一个`<a>`标记的简单的标记帮助器，他告诉Razor 插入定义在与本视图相同的控制器中定义的一个行动方法的URL。程序运行的时候你会看到这个链接。如图2-16所示。
+
+![在行动方法之间加链接](/imgs/fig.2-16.png)
+
+图 2-16 在行动方法之间加链接
+
+启动应用程序并将鼠标放在RSVP Now连接的上面，你会看到连接指向的是下面的URL(端口可能会有不同)：
+http://localhost:57628/Home/RsvpForm
+
+这里有一个重要的原则，即你应该使用MVC生成URL的功能，而不是在你的视图里硬编码。当标记帮助器给`<a`标记建立href属性时，他会检查当前应用程序的配置并计算出URL是什么样子。这允许改变应用程序配置来支持不同的URL格式而无需更新视图。我将会在第15章解释其原理。
+
+## 建立窗体
+现在我已经建立了强类型的视图，并且能够在Index视图中连接到它，我将在RsvpForm.cshtml文件里增加一些内容，并使他们变成一个HTML表单，用来编辑GuestResponse对象，如代码2-12。
+
+Listing 2-12. 建立一个输入表单视图
+```html
+@model PartyInvites.Models.GuestResponse
+@{
+Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width" />
+<title>RsvpForm</title>
+</head>
+<body>
+<form asp-action="RsvpForm" method="post">
+<p>
+<label asp-for="Name">Your name:</label>
+<input asp-for="Name" />
+</p>
+<p>
+<label asp-for="Email">Your email:</label>
+<input asp-for="Email" />
+</p>
+<p>
+<label asp-for="Phone">Your phone:</label>
+<input asp-for="Phone" /></p>
+<p>
+<label>Will you attend?</label>
+<select asp-for="WillAttend">
+<option value="">Choose an option</option>
+<option value="true">Yes, I'll be there</option>
+<option value="false">No, I can't come</option>
+</select>
+</p>
+<button type="submit">Submit RSVP</button>
+</form>
+</body>
+</html>
+```
+
+我已经为GuestResponse模型类的每一个属性定义了一个标签和输入元素。每一个元素都使用asp-for属性连接一个模型的属性。这里的asp-for是另一个标签帮助器，他能配置将元素连接到模型对象。下面是一个例子，由标记帮助器生成，发给浏览器的HTML：
+
+```html
+<p>
+<label for="Name">Your name:</label>
+<input type="text" id="Name" name="Name" value="">
+</p>
+```
+这里Label 上的asp-for 帮助器可以给for属性设置值。input 元素上的asp-for 可以设置元素的id 和name。这些都不是什么特殊的用途，但是你将会看到将元素连接到模型的属性会带来更多的好处。
+马上你就会看到更多的asp-action属性应用到了form元素， 它使用了应用程序的URL路由配置来设置form的action属性为一个指向到一个特殊的行动方法的URL，如下面这样:
+
+`<form method="post" action="/Home/RsvpForm">`
+与我应用到元素的助手属性一样，这种方法的好处是更改应用程序使用的URL系统，标签助手生成的内容将反映自动变化。
+运行该应用程序并点击RSVP Now 连接,可以看到窗体，如图2-17。
+
+
+![在行动方法之间加链接](/imgs/fig.2-17.png)
+
+图 2-17 在行动方法之间加链接
+
+## 接收数据
+
+我还没有告诉MVC当表单被发送到服务器时我想做什么。目前来看，点击Submit RSVP按钮只是清除您输入到表单中的值。那是因为表单将数据发回Home控制器的RsvpForm行动方法后只告诉MVC再次渲染这个视图，没做别的事情。 
+要接收和处理提交的表单数据，我将使用核心控制器功能。我会加第二个RsvpForm动作方法来建立下面这些内容：
+* 一个响应HTTP GET请求的方法：浏览器每次单击链接时，通常会引发一个GET请求。这个版本的行动方法将在用户第一次访问Home/RsvpForm时显示一个空白的表单。 
+* 一个响应HTTP POST请求的方法: 默认的情况下，使用Html.BeginForm()的表单会被浏览器使用POST请求提交。这个版本的行动，将会负责接受提交的数据并决定下一步对这些数据作什么处理。
+用不同的C#方法分别处理Get和POST请求会让你的代码看起来更简洁。因为两个方法应该行使不同的职责。两个方法会被同一个URL引发，但是MVC能够确根据GET请求或POST请求来调用适当的方法。代码2-13 可以看到HomeController类所做的更改。
+
+Listing 2-13. 增加一个行动方法来支持POST请求
+```cs
+using System;
+using Microsoft.AspNetCore.Mvc;
+using PartyInvites.Models;
+namespace PartyInvites.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+int hour = DateTime.Now.Hour;
+ViewBag.Greeting = hour < 12 ? "Good Morning" : "Good Afternoon";
+return View("MyView");
+}
+[HttpGet]
+public ViewResult RsvpForm() {
+return View();
+}
+[HttpPost]
+public ViewResult RsvpForm(GuestResponse guestResponse) {
+// TODO: store repsonse from guest
+return View();
+}
+}
+}
+```
+我已经给已经存在的RsvpForm行动方法加上了一个HttpGet的特性（attribute）,这回告诉MVC此方法仅能够被Get请求调用。然后我给RsvpForm方法增加了一个重载的版本，他可以接受GuestResponse 对象。 对这个方法我应用了HttpPost特性。它会告诉MVC 新的方法将处理POST请求。在后面的段落里我将会介绍这些代码是如何工作的。我也引入了一个叫做PartyInvites.Models的命名空间。加入它是为了我能够使用GuestResponse 模型类型。
+
+
+
+
