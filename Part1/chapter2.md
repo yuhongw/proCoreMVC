@@ -621,7 +621,7 @@ Thanks.cshtml视图使用Razor来显示RsvpForm操作方法中传递给View方�
   现在我已经创建了Thanks视图，我已经有了一个基本的工作示例-使用MVC一个表单。
 通过从Debug菜单中选择Start Debugging来启动Visual Studio中的应用程序，单击“RSVP Now”链接，在表单中添加一些数据，然后单击“Submit RSVP”按钮， 你会看到如图2-18所示的结果（尽管如果你的名字不是Joe）。
 
-![感谢视图](/imgs/Fig.2-18.png)
+![感谢视图](/imgs/fig.2-18.png)
 
 图2-18 感谢视图
 
@@ -707,7 +707,7 @@ Razor视图文件具有cshtml文件扩展名，因为它们是C＃代码和HTML�
 您可以在清单2-18中看到这一点，其中我使用foreach循环来处理使用View方法将action方法传递给视图的每个GuestResponse对象。与正常的C＃foreach循环不同，Razor foreach循环的主体包含添加到将被发送回浏览器的响应中的HTML元素。在此视图中，每个GuestResponse对象都生成一个tr元素，其中包含用对象属性的值填充的td元素。
  要查看工作中的列表，请通过从开始菜单中选择启动调试来运行应用程序，提交一些表单数据，然后单击链接以查看响应列表。您将看到从应用程序启动后输入的数据摘要，如图2-19所示。该视图呈现数据的方式不太美观，但还可以了，本章稍后将介绍应用程序的样式。
 
-![显示参加人员列表](/imgs/Fig.2-19.png)
+![显示参加人员列表](/imgs/fig.2-19.png)
 
 图2-18 显示参加人员列表
 
@@ -821,7 +821,7 @@ Listing 2-21. 增加验证汇总
 将asp-validation-summary属性应用于div元素，并在显示视图时显示验证错误列表。 asp-validation-summary属性的值是一个名为ValidationSummary的枚举的值，它指定了摘要将包含哪些类型的验证错误。 我指定了All，这对于大多数应用程序来说都很适用，我将在第27章描述其他值并解释它们中的工作原理。
 要了解验证摘要的工作原理，请运行应用程序，填写“名称”字段，并提交表单而不输入任何其他数据。 您将看到验证错误的摘要，如图2-20所示。
 
-![显示验证错误](/imgs/Fig.2-20.png)
+![显示验证错误](/imgs/fig.2-20.png)
 
 图2-20 显示验证错误
 
@@ -846,3 +846,227 @@ Listing 2-21. 增加验证汇总
  我已经高亮显示了二者的区别：asp-for标签帮助器属性将输入元素添加到一个名为input-validation-error的类中。 我创建一个包含此类的CSS样式的样式表，不同的HTML助手属性使用的其他样式表来实现这个效果。  MVC项目中的约定是将传递给客户端的静态内容放入wwwroot文件夹中，按内容类型进行组织，以便CSS样式表进入wwwroot/css文件夹，JavaScript文件进入wwwroot/js文件夹，依此类推。
   要创建样式表，请右键单击Visual Studio解决方案资源管理器中的wwwroot/css文件夹，选择添加->新项，导航到客户端部分，然后从模板列表中选择样式表，如图2-21。
 
+![建立CSS样式表](/imgs/fig.2-21.png)
+
+图2-21 建立CSS样式表
+
+提示:当使用Web应用程序模板创建项目时，Visual Studio会在wwwroot / css文件夹中创建一个style.css文件。 你可以忽略这个文件，我在本章不使用它。
+
+将文件的名称设置为styles.css，单击添加按钮创建样式表，然后编辑新文件，把他改成代码2-22所示的样式。
+
+Listing 2-22. styles.css 文件的内容
+
+```html
+.field-validation-error {color: #f00;}
+.field-validation-valid { display: none;}
+.input-validation-error { border: 1px solid #f00; background-color: #fee; }
+.validation-summary-errors { font-weight: bold; color: #f00;}
+.validation-summary-valid { display: none;}
+ To apply this stylesheet, I have added a link element to the head section of the RsvpForm view, as shown
+in Listing 2-23 .
+ Listing 2-23. Applying a Stylesheet in the RsvpForm.cshtml File
+...
+<head>
+ <meta name="viewport" content="width=device-width" />
+ <title>RsvpForm</title>
+ <link rel="stylesheet" href="/css/styles.css" />
+</head>
+... 
+```
+
+link 元素使用href属性来指定样式表的位置。 请注意，URL中省略了wwwroot文件夹。 ASP.NET的默认配置包括支持静态内容，如图像，CSS样式表和JavaScript文件，并将请求自动映射到wwwroot文件夹。 我在第14章中描述了ASP.NET和MVC配置过程。
+
+提示:有一个特殊的标签帮助器来处理样式表，如果你有很多文件要管理，这可以很有用。 详见第25章。
+
+随着样式表的应用，当提交导致验证错误的数据时，会显示更明显的验证错误，如图2-22所示。
+
+![自动高亮错误](/imgs/fig.2-22.png)
+图2-22 自动高亮错误
+
+## 设置样式
+
+应用程序的所有功能目标都完成了，但应用程序的整体外观还需要调整一下。 当您使用Web应用程序模板创建项目时，如本章中的示例所示，Visual Studio安装了一些常见的客户端开发包。 虽然我不是使用模板的粉丝，但我喜欢Microsoft选择的客户端库。 其中一个被称为Bootstrap，它是一个很好的CSS框架，最初由Twitter开发，已经成为一个主要的开源项目，它已经成为Web应用程序开发的支柱。
+
+注意:Bootstrap 3是我写的当前版本，但是第4版正在开发中。 Microsoft可能会选择在Visual Studio的更高版本中更新Web应用程序模板使用的Bootstrap版本，这可能会导致内容显示不同。 这对于本书中的其他章节来说不会是一个问题，因为我向您展示如何明确指定包版本，以便获得预期的结果。
+
+## 设置Welcome视图的样式
+
+wwwroot/lib/bootstrap文件夹的文件中定义了一些CSS选择器,基本的Bootstrap功能通过将类应用到与添加到CSS选择器相对应的元素来工作。 您可以从http://getbootstrap.com 获取Bootstrap定义的类的详细信息，代码2-24演示了如何将一些基本样式应用于MyView.cshtml视图。
+
+Listing 2-24. 给MyView.cshtml添加Bootstrap
+```html
+@{
+ Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+ <meta name="viewport" content="width=device-width" />
+ <title>Index</title>
+ <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.css" />
+</head>
+<body>
+ <div class="text-center">
+ <h3>We're going to have an exciting party!</h3>
+ <h4>And you are invited</h4>
+ <a class="btn btn-primary" asp-action="RsvpForm">RSVP Now</a>
+ </div>
+</body>
+</html> 
+```
+
+我添加了其中link元素，他的href属性是wwwroot/lib/bootstrap/dist/css/bootstrap.css。 第三方CSS和JavaScript包安装在wwwroot/lib文件夹中是一个常用约定，我将在第6章中描述用于管理这些包的工具。
+  导入Bootstrap样式表后，我需要为我的元素设置样式。 这是一个简单的例子，所以我只需要使用少量的Bootstrap CSS类：text-center，btn和btn-primary。
+  text-center class将元素及其子元素的内容置于中心位置。 btn类将按钮、input元素变得更漂亮，btn-primary指定我想要的按钮的颜色范围。 运行应用程序可以看到效果，如图2-23所示。
+
+![设置视图样式](/imgs/fig.2-23.png)
+图2-23 设置视图样式
+
+很明显，我不是网页设计师。 事实上，作为一个孩子，我根本就没有任何才华，因此我被排除在艺术课之外。 这使得我有更多时间来上数学课，但意味着我的艺术能力并没有超过10岁的平均水平。 对于一个真正的项目，我会寻求一位专业人士来帮助设计和设计内容，但是在这个例子中，我一个人就这样做了，也就是应用Bootstrap可以像我一样有一些限制和一致性。
+
+## 设置RsvpForm视图的样式
+
+Bootstrap定义了可以用于样式表单的类。 我不会详细介绍他们，但是您可以看到我已经在清单2-25中应用了这些类。
+
+Listing 2-25. 给RsvpForm.cshtml添加Bootstrap 
+```html
+@model PartyInvites.Models.GuestResponse
+@{
+Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width" />
+<title>RsvpForm</title>
+<link rel="stylesheet" href="/css/styles.css" />
+<link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.css" />
+</head>
+<body>
+<div class="panel panel-success">
+<div class="panel-heading text-center"><h4>RSVP</h4></div>
+<div class="panel-body">
+<form class="p-a-1" asp-action="RsvpForm" method="post">
+<div asp-validation-summary="All"></div>
+<div class="form-group">
+<label asp-for="Name">Your name:</label>
+<input class="form-control" asp-for="Name" />
+</div>
+<div class="form-group">
+<label asp-for="Email">Your email:</label>
+<input class="form-control" asp-for="Email" />
+</div>
+<div class="form-group">
+<label asp-for="Phone">Your phone:</label>
+<input class="form-control" asp-for="Phone" />
+</div>
+<div class="form-group">
+<label>Will you attend?</label>
+<select class="form-control" asp-for="WillAttend">
+<option value="">Choose an option</option>
+<option value="true">Yes, I'll be there</option>
+<option value="false">No, I can't come</option>
+ </select>
+ </div>
+ <div class="text-center">
+ <button class="btn btn-primary" type="submit">
+ Submit RSVP
+ </button>
+ </div>
+ </form>
+ </div>
+ </div>
+</body>
+</html> 
+```
+此示例中的Bootstrap类创建一个标题，只给了布局的结构。 要设置样式，我使用了form-group类，用于给标签元素和相关的input或select元素设置样式。 您可以在图2-24中看到效果。
+
+![设置RsvpForm视图的样式](/imgs/fig.2-24.png)
+图2-24 设置RsvpForm视图的样式
+
+## 设置Thanks视图的样式
+
+下一个要设置样式的视图是Thanks.cshtml，您可以使用类似于我用于其他视图的CSS类来看清楚如何在代码2-26中完成此操作。 为了使应用程序更易于管理，尽可能避免重复代码和标记，这一个很好的原则。 MVC提供了几个功能来帮助减少重复，我将在后面的章节中介绍。 这些功能包括Razor布局（第5章），部分视图（第21章）和视图组件（第22章）。
+
+Listing 2-26. 设置Thanks.cshtml样式
+```html
+@model PartyInvites.Models.GuestResponse
+@{
+ Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+ <meta name="viewport" content="width=device-width" />
+ <title>Thanks</title>
+ <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.css" />
+</head>
+<body class="text-center">
+ <p>
+ <h1>Thank you, @Model.Name!</h1>
+ @if (Model.WillAttend == true) {
+ @:It's great that you're coming. The drinks are already in the fridge!
+ } else {
+ @:Sorry to hear that you can't make it, but thanks for letting us know.
+ }
+ </p>
+ Click <a class="nav-link" asp-action="ListResponses">here</a>
+ to see who is coming.
+</body>
+</html> 
+```
+图2-25 显示了样式的效果。
+
+![Thanks视图的样式](/imgs/fig.2-25.png)
+图2-25 Thanks视图的样式
+
+## 设置列表视图的样式
+
+最后的风格是ListResponses，它列出了与会者的列表。 对内容设置样式遵循与所有Bootstrap样式相同的基本方法，如代码2-27所示。
+
+Listing 2-27. ListResponses.cshtml 加 Bootstrap
+```html
+@model IEnumerable<PartyInvites.Models.GuestResponse>
+@{
+ Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+ <meta name="viewport" content="width=device-width" />
+ <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.css" />
+ <title>Responses</title>
+</head>
+<body>
+ <div class="panel-body">
+ <h2>Here is the list of people attending the party</h2>
+ <table class="table table-sm table-striped table-bordered">
+ <thead>
+ <tr>
+ <th>Name</th>
+ <th>Email</th>
+ <th>Phone</th>
+ </tr>
+ </thead>
+ <tbody> 
+ @foreach (PartyInvites.Models.GuestResponse r in Model) {
+ <tr>
+ <td>@r.Name</td>
+ <td>@r.Email</td>
+ <td>@r.Phone</td>
+ </tr>
+ }
+ </tbody>
+ </table>
+ </div>
+</body>
+</html> 
+ ```
+图2-26显示了与会者的表格的呈现方式。 将这些样式添加到视图中完成了示例应用程序，该应用程序现在实现了所有的开发目标，并且外观也已经改的很好了。
+
+![ListResponses视图的样式](/imgs/fig.2-26.png)
+图2-26 ListResponses视图的样式
+
+## 小结
+
+在本章中，我创建了一个新的MVC项目，并使用它来构建一个简单的数据录入应用程序，让您首先了解ASP.NET Core MVC架构和方法。 我跳过了一些关键的东西（包括Razor语法，路由和测试），但我将在后面的章节深入介绍这些内容。 在下一章中，我将描述MVC设计模式，这是开发ASP.NET Core MVC应用程序的基础。
