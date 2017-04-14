@@ -1065,6 +1065,7 @@ Listing 2-27. ListResponses.cshtml 加 Bootstrap
 图2-26显示了与会者的表格的呈现方式。 将这些样式添加到视图中完成了示例应用程序，该应用程序现在实现了所有的开发目标，并且外观也已经改的很好了。
 
 ![ListResponses视图的样式](/imgs/fig.2-26.png)
+
 图2-26 ListResponses视图的样式
 
 ## 小结
