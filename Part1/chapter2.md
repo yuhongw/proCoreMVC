@@ -521,6 +521,328 @@ return View();
 ```
 我已经给已经存在的RsvpForm行动方法加上了一个HttpGet的特性（attribute）,这回告诉MVC此方法仅能够被Get请求调用。然后我给RsvpForm方法增加了一个重载的版本，他可以接受GuestResponse 对象。 对这个方法我应用了HttpPost特性。它会告诉MVC 新的方法将处理POST请求。在后面的段落里我将会介绍这些代码是如何工作的。我也引入了一个叫做PartyInvites.Models的命名空间。加入它是为了我能够使用GuestResponse 模型类型。
 
+## 使用模型绑定
+第一个重载的RsvpForm行动方法渲染的视图同前面的一样--RsvpForm.cshtml--是用来生成图2-17那样的表单的。第二个重载的是个更有意思的事，但是考虑到响应于HTTP POST请求将调用行动方法，GuestResponse类型是一个C#类，两者是如何连接的？
 
+答案是模型绑定，一个有用的MVC功能，其中输入数据被解析成HTTP请求中的键/值对，用于填充领域模型类型的属性。  模型绑定是一种功能强大且可自定义的功能，可以消除磨合而直接处理HTTP请求，并让您使用C#对象，而不是处理由浏览器发送的单个数据值。作为参数传递给Action方法的GuestResponse对象是自动填充表单字段中的数据的。 在第26章我将会介绍更多关于模型绑定的细节，包括如何定制。
 
+应用程序中另一个目标是提供一个摘要页面，其中包含参加人的详细信息，这需要跟踪我收到的回复。 我将通过创建一个内存中的Collection对象来做到这一点。 这在实际应用中是没有什么用途的，因为应用程序停止或重新启动的话，数据将丢失，但这种方法允许我将重点放在MVC上并创建一个可以轻松地重置为初始状态的应用程序。
+
+提示:第8章中,我演示了一个更实际的示例应用程序，将演示如何在MVC中永久地存储和访问数据。
+
+我通过右键单击Models文件夹并从弹出窗口中选择Add->Class，将文件添加到项目中。 我将文件的名称设置为Repository.cs，并使用它来定义一个类，如清单2-14所示。
+
+Listing 2-14. Repository.cs 文件的内容
+```cs
+using System.Collections.Generic;
+namespace PartyInvites.Models {
+ public static class Repository {
+ private static List<GuestResponse> responses = new List<GuestResponse>();
+ public static IEnumerable<GuestResponse> Responses {
+ get {
+ return responses;
+ }
+ }
+ public static void AddResponse(GuestResponse response) {
+ responses.Add(response);
+ }
+ }
+}
+```
+Repository类及其成员是静态的，这将使我很容易从应用程序中的不同位置存储和检索数据。 MVC提供了一种更为复杂的方法来定义常见的功能，称为依赖注入，我在第18章中描述，但静态类是一个简单的应用程序入门的好方法。
+
+## 保存响应
+
+现在我有一个存储数据的地方，我可以更新接收HTTP POST请求的操作方法，如清单2-15所示。
+
+Listing 2-15. 更新行动方法
+```cs
+using System;
+using Microsoft.AspNetCore.Mvc;
+using PartyInvites.Models;
+namespace PartyInvites.Controllers {
+ public class HomeController : Controller {
+ public ViewResult Index() {
+ int hour = DateTime.Now.Hour;
+ ViewBag.Greeting = hour < 12 ? "Good Morning" : "Good Afternoon";
+ return View("MyView");
+ }
+ [HttpGet]
+ public ViewResult RsvpForm() {
+ return View();
+ }
+ [HttpPost]
+ public ViewResult RsvpForm(GuestResponse guestResponse) {
+ Repository.AddResponse(guestResponse);
+ return View("Thanks", guestResponse);
+ }
+ }
+} 
+```
+处理请求中发送的表单数据的所有操作都是与传递给行动方法的GuestResponse对象一起使用 - 在这种情况下，将其作为参数传递给Repository.AddResponse方法，以便保存响应。
+
+为什么模型绑定不像Web Forms?
+
+在第一章中，我解释说传统ASP.NET Web窗体的一个缺点是它隐藏了开发人员的HTTP和HTML的细节。 您可能会想知道用于从代码2-15中的HTTP POST请求创建GuestResponse对象的MVC模型绑定是否会做同样的事情。
+他没有这样做。模型绑定使我免除无聊且容易出错的任务，因为我们必须检查HTTP请求并提取我需要的所有数据值，但是（这是重要的部分），如果我想手动处理请求，那也可以，因为MVC可以方便地访问所有的请求数据。MVC没有对开发人员隐藏任何东西，但是有一些有用的功能可以使HTTP和HTML更简单。对于这些功能你可以用，也可以不用，随便。
+
+ 这似乎是一个微妙的区别，但是当您了解有关MVC的更多信息时，您将看到开发体验与传统Web窗体完全不同，并且您可以始终能够了解到应用程序收到的请求是如何处理的。
+
+在RsvpForm操作方法中对View方法的调用告诉MVC渲染一个名为Thanks的视图，并将GuestResponse对象传递给视图。 要创建视图，请右键单击解决方案资源管理器中的“视图/主页”文件夹，然后从弹出菜单中选择“添加”->“新建项目”。 在ASP.NET类别中选择MVC视图页面模板，将名称设置为Thanks.cshtml，然后单击添加按钮。 Visual Studio将创建Views / Home / Thanks.cshtml文件并打开它进行编辑。 用代码2-16替换文件的内容。
+
+Listing 2-16. Thanks.cshtml 文件的内容
+```html
+@model PartyInvites.Models.GuestResponse
+@{
+ Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+ <meta name="viewport" content="width=device-width" />
+ <title>Thanks</title>
+</head>
+<body>
+ <p>
+ <h1>Thank you, @Model.Name!</h1>
+ @if (Model.WillAttend == true) {
+ @:It's great that you're coming. The drinks are already in the fridge!
+ } else {
+ @:Sorry to hear that you can't make it, but thanks for letting us know.
+ }
+ </p>
+ <p>Click <a asp-action="ListResponses">here</a> to see who is coming.</p>
+</body>
+</html> 
+```
+
+Thanks.cshtml视图使用Razor来显示RsvpForm操作方法中传递给View方法的GuestResponse属性的值。 Razor中，@model表达式指定强制键入视图的领域模型类型。
+  要访问域对象中的属性的值，我使用Model.PropertyName。 例如，要获取Name属性的值，我调用Model.Name。 如果不了解Razor的语法，不要担心，我在第5章更详细地解释它。
+  现在我已经创建了Thanks视图，我已经有了一个基本的工作示例-使用MVC一个表单。
+通过从Debug菜单中选择Start Debugging来启动Visual Studio中的应用程序，单击“RSVP Now”链接，在表单中添加一些数据，然后单击“Submit RSVP”按钮， 你会看到如图2-18所示的结果（尽管如果你的名字不是Joe）。
+
+![感谢视图](/imgs/Fig.2-18.png)
+
+图2-18 感谢视图
+
+## 显示响应
+
+在Thanks.cshtml视图的结尾，我添加了一个元素来创建一个链接来显示参加派对的人员列表。 我使用asp-action标签帮助器属性来创建一个目标名为ListResponses的动作方法的URL，像这样：
+
+...
+`<p>Click <a asp-action="ListResponses">here</a> to see who is coming.</p>`
+... 
+
+如果您将鼠标悬停在浏览器显示的链接上，您将看到它的URL是/Home/ListResponses。 这与Home控制器中的任何操作方法不对应，如果单击链接，您将看到一个空页面。 打开浏览器的开发工具并查看服务器发送的响应会显示服务器发回404 - 未找到错误（Chrome有一点奇怪的是它不会向用户显示错误消息，但是 我将在第14章解释如何产生有意义的错误消息）。
+  我将通过创建Home控制器中URL定位的操作方法来解决问题，如清单2-17所示。
+
+Listing 2-17. 在控制器里增加一个行动方法
+```cs
+using System;
+using Microsoft.AspNetCore.Mvc;
+using PartyInvites.Models;
+using System.Linq;
+namespace PartyInvites.Controllers {
+ public class HomeController : Controller {
+ public ViewResult Index() {
+ int hour = DateTime.Now.Hour;
+ ViewBag.Greeting = hour < 12 ? "Good Morning" : "Good Afternoon";
+ return View("MyView");
+ } 
+[HttpGet]
+ public ViewResult RsvpForm() {
+ return View();
+ }
+ [HttpPost]
+ public ViewResult RsvpForm(GuestResponse guestResponse) {
+ Repository.AddResponse(guestResponse);
+ return View("Thanks", guestResponse);
+ }
+ public ViewResult ListResponses() {
+ return View(Repository.Responses.Where(r => r.WillAttend == true));
+ }
+ }
+} 
+```
+
+新的Action方法称为ListResponses，它使用Repository调用View方法。 响应属性作为参数。 这是向强类型视图提供数据的一种操作方法。
+使用LINQ过滤GuestResponse对象的集合，以便得到正确响应。 ListResponses行动方法没有指定应该用于显示GuestResponse对象的集合的视图的名称，这意味着将使用默认的命名约定，MVC将在Views/Home和Views/Shared文件夹中查找名为ListResponses.cshtml的视图。要创建视图，请右键单击解决方案资源管理器中的“视图/主页”文件夹，然后从弹出菜单中选择“添加”->“新建项目”。 在ASP.NET类别中选择MVC视图页面模板，将名称设置为ListResponses.cshtml，然后单击添加按钮。 编辑新视图的内容如代码2-18。
+
+Listing 2-18. 显示接收
+```html
+@model IEnumerable<PartyInvites.Models.GuestResponse>
+@{
+ Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+ <meta name="viewport" content="width=device-width" />
+ <title>Responses</title>
+</head>
+<body>
+ <h2>Here is the list of people attending the party</h2>
+ <table>
+ <thead>
+ <tr>
+ <th>Name</th>
+ <th>Email</th>
+ <th>Phone</th>
+ </tr>
+ </thead>
+ <tbody>
+ @foreach (PartyInvites.Models.GuestResponse r in Model) {
+ <tr>
+ <td>@r.Name</td>
+ <td>@r.Email</td>
+ <td>@r.Phone</td>
+ </tr>
+ }
+ </tbody>
+ </table>
+</body>
+</html> 
+```
+Razor视图文件具有cshtml文件扩展名，因为它们是C＃代码和HTML元素的组合。
+您可以在清单2-18中看到这一点，其中我使用foreach循环来处理使用View方法将action方法传递给视图的每个GuestResponse对象。与正常的C＃foreach循环不同，Razor foreach循环的主体包含添加到将被发送回浏览器的响应中的HTML元素。在此视图中，每个GuestResponse对象都生成一个tr元素，其中包含用对象属性的值填充的td元素。
+ 要查看工作中的列表，请通过从开始菜单中选择启动调试来运行应用程序，提交一些表单数据，然后单击链接以查看响应列表。您将看到从应用程序启动后输入的数据摘要，如图2-19所示。该视图呈现数据的方式不太美观，但还可以了，本章稍后将介绍应用程序的样式。
+
+![显示参加人员列表](/imgs/Fig.2-19.png)
+
+图2-18 显示参加人员列表
+
+## 加入数据验证
+
+我现在可以向我的应用程序添加数据验证。 没有验证，用户可以瞎输入数据，甚至提交一个空的表单。 在MVC应用程序中，通常将验证应用于领域模型，而不是在用户界面中。 您可以在一个位置定义验证，但是它将在使用模型类的应用程序中的任何位置生效。 MVC支持使用system.ComponentModel.DataAnnotations 命名空间中的属性定义的声明性验证规则，这意味着可以使用标准C#属性特征表示验证约束。 清单2-19显示了如何将这些属性应用于GuestResponse模型类。
+
+Listing 2-19. 应用数据验证
+```cs
+using System.ComponentModel.DataAnnotations;
+namespace PartyInvites.Models {
+ public class GuestResponse {
+ [Required(ErrorMessage = "Please enter your name")]
+ public string Name { get; set; }
+ [Required(ErrorMessage = "Please enter your email address")]
+ [RegularExpression(".+\\@.+\\..+",
+ ErrorMessage = "Please enter a valid email address")]
+ public string Email { get; set; }
+ [Required(ErrorMessage = "Please enter your phone number")]
+ public string Phone { get; set; }
+ [Required(ErrorMessage = "Please specify whether you'll attend")]
+ public bool? WillAttend { get; set; }
+ }
+} 
+```
+
+MVC会自动检测属性，并在模型绑定过程中使用它们来验证数据。 我导入了包含验证属性的命名空间，所以我可以引用它们，而不需要限定他们的名字。
+
+提示: 如前所述，我为WillAttend属性使用了可空的bool类型。 这样做可以让我应用必需的验证属性。 如果我使用了常规bool类型，我通过模型绑定收到的值可能只是真或假，我无法判断用户是否选择了一个值。 可空的bool有三个可能的值：true，false和null。 如果用户没有选择值，浏览器会发送一个空值，这会导致Required属性报告验证错误。 这是一个很好的例子，演示MVC如何优雅地将C#功能与HTML和HTTP混合在一起。
+
+我使用Controller类中的ModelState.IsValid属性来检查是否存在验证问题。 清单2-20显示了如何在Home控制器类的POST对应的RsvpForm行动方法中完成此操作。
+
+Listing 2-20. 校验表单中的错误
+```cs
+using System;
+using Microsoft.AspNetCore.Mvc;
+using PartyInvites.Models;
+using System.Linq; 
+namespace PartyInvites.Controllers 
+{
+ public class HomeController : Controller 
+ {
+ public ViewResult Index() {
+ int hour = DateTime.Now.Hour;
+ ViewBag.Greeting = hour < 12 ? "Good Morning" : "Good Afternoon";
+ return View("MyView");
+ }
+ [HttpGet]
+ public ViewResult RsvpForm() {
+ return View();
+ }
+ [HttpPost]
+ public ViewResult RsvpForm(GuestResponse guestResponse) {
+ if (ModelState.IsValid) {
+ Repository.AddResponse(guestResponse);
+ return View("Thanks", guestResponse);
+ } else {
+ // there is a validation error
+ return View();
+ }
+ }
+ public ViewResult ListResponses() {
+ return View(Repository.Responses.Where(r => r.WillAttend == true));
+ }
+ }
+} 
+```
+Controller基类提供了一个名为ModelState的属性，它提供有关将HTTP请求数据转换为C#对象的信息。如果ModelState.IsValue属性返回true，那么我知道MVC已经能够满足通过GuestResponse类中的属性指定的验证约束。当这种情况发生时，我就像以前一样渲染了Thanks视图。
+如果ModelState.IsValue属性返回false，那么我知道有验证错误。由ModelState属性返回的对象提供了错误的详细信息，但是我不需要进入该级别的详细信息，因为我可以使用一个有用的功能，自动请求用户解决任何通过调用View方法没有任何参数的问题。当MVC呈现视图时，Razor可以访问与请求相关联的任何验证错误的详细信息，标签助手可以访问详细信息以向用户显示验证错误。清单2-21显示了向RsvpForm视图添加验证标签助手属性。
+
+Listing 2-21. 增加验证汇总
+```html
+@model PartyInvites.Models.GuestResponse
+@{
+ Layout = null;
+} 
+
+<!DOCTYPE html>
+<html>
+<head>
+ <meta name="viewport" content="width=device-width" />
+ <title>RsvpForm</title>
+</head>
+<body>
+ <form asp-action="RsvpForm" method="post">
+ <div asp-validation-summary="All"></div>
+ <p>
+ <label asp-for="Name">Your name:</label>
+ <input asp-for="Name" />
+ </p>
+ <p>
+ <label asp-for="Email">Your email:</label>
+ <input asp-for="Email" />
+ </p>
+ <p>
+ <label asp-for="Phone">Your phone:</label>
+ <input asp-for="Phone" /></p>
+ <p>
+ <label>Will you attend?</label>
+ <select asp-for="WillAttend">
+ <option value="">Choose an option</option>
+ <option value="true">Yes, I'll be there</option>
+ <option value="false">No, I can't come</option>
+ </select>
+ </p>
+ <button type="submit">Submit RSVP</button>
+ </form>
+</body>
+</html> 
+```
+将asp-validation-summary属性应用于div元素，并在显示视图时显示验证错误列表。 asp-validation-summary属性的值是一个名为ValidationSummary的枚举的值，它指定了摘要将包含哪些类型的验证错误。 我指定了All，这对于大多数应用程序来说都很适用，我将在第27章描述其他值并解释它们中的工作原理。
+要了解验证摘要的工作原理，请运行应用程序，填写“名称”字段，并提交表单而不输入任何其他数据。 您将看到验证错误的摘要，如图2-20所示。
+
+![显示验证错误](/imgs/Fig.2-20.png)
+
+图2-20 显示验证错误
+
+如果GuestResponse类的约束得没有得到验证，RsvpForm操作方法将不会呈现“感谢”视图。 请注意，当Razor使用验证摘要呈现视图时，它会保留并显示输入到“名称”字段中的数据。 这是模型绑定的另一个好处，它简化了处理表单数据的工作。
+
+注意: 如果你使用过ASP.NET Web Forms，你会知道Web Forms会将值序列化为名为`__VIEWSTATE`的隐藏表单字段来保留服务器控件的状态。 MVC将模型绑定到Web窗体服务器控件与View State的概念无关。 MVC不会在您呈现的HTML页面中注入隐藏的`__VIEWSTATE`字段。 而是通过设置输入元素的值属性来包含数据。
+
+## 高亮显示无效字段
+
+将模型属性与元素相关联的标签助手属性具有模型绑定的便捷功能。 当模型类属性验证失败时，帮助器属性将生成稍微不同的HTML。 以下是当没有验证错误时的为“电话”字段生成的输入元素：
+```html
+<input type="text" data-val="true" data-val-required="Please enter your phone number" id="Phone" name="Phone" value=""> 
+```
+相对的，这是在用户在文本字段中不输入任何数据并提交表单产生的HTML元素，（这是一个验证错误，我将Required的验证属性应用到了GuestResponse类的Phone属性上）：
+
+```html
+<input type="text" class="input-validation-error" data-val="true"
+ data-val-required="Please enter your phone number" id="Phone"
+ name="Phone" value=""> 
+ ```
+
+ 我已经高亮显示了二者的区别：asp-for标签帮助器属性将输入元素添加到一个名为input-validation-error的类中。 我创建一个包含此类的CSS样式的样式表，不同的HTML助手属性使用的其他样式表来实现这个效果。  MVC项目中的约定是将传递给客户端的静态内容放入wwwroot文件夹中，按内容类型进行组织，以便CSS样式表进入wwwroot/css文件夹，JavaScript文件进入wwwroot/js文件夹，依此类推。
+  要创建样式表，请右键单击Visual Studio解决方案资源管理器中的wwwroot/css文件夹，选择添加->新项，导航到客户端部分，然后从模板列表中选择样式表，如图2-21。
 
