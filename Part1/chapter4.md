@@ -322,5 +322,37 @@ set { name = value; }
 ...
 ```
 
-这种类型的功能叫做语法糖，这意味着它使C#更加愉快地工作 - 在这种情况下，通过消除最终被复制的冗余代码，而不会大大改变语言的行为方式。 术语"糖"可能看起来很贬义，但是使代码更容易编写和维护的任何增强功能都是有益的，特别是在大型复杂项目中。
+这种类型的特征叫做语法糖，它能使C#更加愉快地工作 - 在这种情况下，它能消除最终被复制的冗余代码，而不会大大改变语言的行为方式。 术语"糖"可能看起来很贬义，但是使代码更容易编写和维护的任何增强功能都是有益的，特别是在大型复杂项目中。
 
+## 使用自动实现的属性初始化器
+
+自C＃3.0以来一直支持自动实现的属性。 最新版本的C＃支持自动实现的属性的初始化器，允许设置初始值，而不必使用构造函数，如代码清单4-10所示。
+
+Listing 4-10. 使用自动实现的属性初始化器
+```cs
+namespace LanguageFeatures.Models {
+public class Product {
+public string Name { get; set; }
+public string Category { get; set; } = "Watersports";
+public decimal? Price { get; set; }
+public Product Related { get; set; }
+public static Product[] GetProducts() {
+Product kayak = new Product {
+    Name = "Kayak",
+Category = "Water Craft",
+Price = 275M
+};
+Product lifejacket = new Product {
+Name = "Lifejacket", Price = 48.95M
+};
+kayak.Related = lifejacket;
+return new Product[] { kayak, lifejacket, null };
+}
+}
+}
+```
+将值分配给自动实现的属性不会阻止setter更改属性，并且只需对构造函数的简单类型的代码进行整理，以提供默认值。 在该示例中，初始化程序为“类别”属性分配了一个“Watersports”值。当我创建皮划艇对象时并需要指定一个值的水工艺时，我会做改变初始值。
+
+## 建立只读的自动实现的属性
+
+您可以通过使用初始化程序创建只读属性，属性中省略set关键字即可，如清单4-11所示。
