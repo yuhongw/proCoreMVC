@@ -746,3 +746,4 @@ return View("Index", new string[] { $"Array Total: {arrayTotal:C2}" });
 当我在Product对象数组中调用FilterByPrice方法时，只有那些花费超过$ 20的那些方法被TotalPrices方法接收并用于计算总数。 如果您运行应用程序，您将在浏览器窗口中看到以下输出：
 
 Total: $358.90
+
