@@ -747,3 +747,188 @@ return View("Index", new string[] { $"Array Total: {arrayTotal:C2}" });
 
 Total: $358.90
 
+## 使用Lambda表达式
+
+Lambda表达式是一个可以引起大量混乱的语言特征，特别是因为它们简化的功能也令人迷惑。 请参考我在上一节中定义的FilterByPrice扩展方法。 这个方法可以按价格过滤产品对象，这意味着如果我想按名称过滤，我必须创建另一个方法，如代码4-26所示。
+
+Listing 4-26. 增加一个过滤方法
+```cs
+using System.Collections.Generic;
+namespace LanguageFeatures.Models {
+public static class MyExtensionMethods {
+public static decimal TotalPrices(this IEnumerable<Product> products) {
+decimal total = 0;
+foreach (Product prod in products) {
+total += prod?.Price ?? 0;
+}
+return total;
+}
+public static IEnumerable<Product> FilterByPrice(
+this IEnumerable<Product> productEnum, decimal minimumPrice) {
+foreach (Product prod in productEnum) {
+if ((prod?.Price ?? 0) >= minimumPrice) {
+yield return prod;
+}
+}
+}
+public static IEnumerable<Product> FilterByName(
+this IEnumerable<Product> productEnum, char firstLetter) {
+foreach (Product prod in productEnum) {
+if (prod?.Name?[0] == firstLetter) {
+yield return prod;
+}
+}
+}
+}
+}
+```
+代码4-27显示了使用控制器中应用的两种过滤方法来创建两个不同的总计。
+
+Listing 4-27. 使用两个方法
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+Product[] productArray = {
+new Product {Name = "Kayak", Price = 275M},
+new Product {Name = "Lifejacket", Price = 48.95M},
+new Product {Name = "Soccer ball", Price = 19.50M},
+new Product {Name = "Corner flag", Price = 34.95M}
+};
+decimal priceFilterTotal = productArray.FilterByPrice(20).TotalPrices();
+decimal nameFilterTotal = productArray.FilterByName('S').TotalPrices();
+return View("Index", new string[] {
+$"Price Total: {priceFilterTotal:C2}",
+$"Name Total: {nameFilterTotal:C2}" });
+}
+}
+}
+```
+
+第一个过滤器选择价格大于$20的所有产品，第二个过滤名称以字母S开头的产品。 如果运行示例应用程序，您将在浏览器窗口中看到以下输出：
+
+Price Total: $358.90
+Name Total: $19.50
+
+### 定义函数
+
+我可以重复这个过程，并为每个属性和属性组合创建不同的过滤器方法。一个更优雅的方法是将处理枚举的代码与选择标准分开。 通过允许函数作为对象传递，C#很容易做到这一点。 清单4-28显示了一个单独的扩展方法，用于过滤Product对象的枚举，但是将结果中包含哪些数据由单独的函数来决定。
+
+Listing 4-28. 创建一个通用的过滤方法
+```cs
+using System.Collections.Generic;
+using System;
+namespace LanguageFeatures.Models {
+public static class MyExtensionMethods {
+
+public static decimal TotalPrices(this IEnumerable<Product> products) {
+decimal total = 0;
+foreach (Product prod in products) {
+total += prod?.Price ?? 0;
+}
+return total;
+}
+public static IEnumerable<Product> Filter(
+this IEnumerable<Product> productEnum,
+Func<Product, bool> selector) {
+foreach (Product prod in productEnum) {
+if (selector(prod)) {
+yield return prod;
+}
+}
+}
+}
+}    
+```
+
+Filter方法的第二个参数是接受Product对象并返回bool值的函数。 Filter方法调用每个Product对象的函数，如果该函数返回true，则将其包含在结果中。 要使用Filter方法，我可以指定一个方法或创建一个独立的函数，如清单4-29所示。
+
+Listing 4-29. 使用过滤器函数
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+bool FilterByPrice(Product p) {
+return (p?.Price ?? 0) >= 20;
+}
+public ViewResult Index() {
+Product[] productArray = {
+new Product {Name = "Kayak", Price = 275M},
+new Product {Name = "Lifejacket", Price = 48.95M},
+new Product {Name = "Soccer ball", Price = 19.50M},
+new Product {Name = "Corner flag", Price = 34.95M}
+};
+
+Func<Product, bool> nameFilter = delegate (Product prod) {
+return prod?.Name?[0] == 'S';
+};    
+decimal priceFilterTotal = productArray
+.Filter(FilterByPrice)
+.TotalPrices();
+decimal nameFilterTotal = productArray
+.Filter(nameFilter)
+.TotalPrices();
+return View("Index", new string[] {
+$"Price Total: {priceFilterTotal:C2}",
+$"Name Total: {nameFilterTotal:C2}" });
+}
+}
+}
+```
+
+这两种方法都不理想。 定义如FilterByPrice方法必须定义一个类。 创建Func <Product，bool>对象避免了这个问题，但是要使用难以阅读和难以维护的语法。 为解决这个问题，我们可以用lambda表达式以更优雅和表现力的方式定义函数，如清单4-30所示。
+
+Listing 4-30. 使用Lambda表达式
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+Product[] productArray = {
+new Product {Name = "Kayak", Price = 275M},
+new Product {Name = "Lifejacket", Price = 48.95M},
+new Product {Name = "Soccer ball", Price = 19.50M},
+new Product {Name = "Corner flag", Price = 34.95M}
+};
+decimal priceFilterTotal = productArray
+.Filter(p => (p?.Price ?? 0) >= 20)
+.TotalPrices();
+decimal nameFilterTotal = productArray
+.Filter(p => p?.Name?[0] == 'S')
+.TotalPrices();
+return View("Index", new string[] {
+$"Price Total: {priceFilterTotal:C2}",
+$"Name Total: {nameFilterTotal:C2}" });
+}
+}
+}
+```
+
+上面的lambda表达式以粗体显示。这里使用了无类型参数，编译器将自动推断类型。 =>字符朗读为“转到”并将参数链接到lambda表达式的结果。 在我的例子中，一个名为p的Product参数转到bool结果，如果第一个表达式中Price属性等于或大于20，或者Name属性以第二个表达式中的S开头，则该参数将为true。 该代码的工作方式与单独的方法和函数委托相同，但更简洁，对大多数人来说更容易阅读。
+
+我不需要在lambda表达式中表达我的委托的逻辑。 可以轻松地调用一个方法，像这样：
+
+prod => EvaluateProduct（prod）
+
+如果我需要一个具有多个参数的委托的lambda表达式，我必须用括号括起参数，如下所示：
+
+（prod，count）=> prod.Price> 20 && count> 0
+
+最后，如果我需要在lambda表达式中需要多个语句的逻辑，我可以通过使用大括号（{}）并完成一个返回语句，如下所示：
+
+（prod，count）=> {
+// ...多个代码语句...
+return result;
+}
+
+您不需要在代码中非得使用lambda表达式不可，但是它能以可读和清晰的方式让复杂函数更加整洁。 我非常喜欢他们，你会看到，在这本书中我用了很多。
+
