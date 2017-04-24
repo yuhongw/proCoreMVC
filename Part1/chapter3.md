@@ -60,7 +60,7 @@
 顾名思义，ASP.NET Core MVC将抽象MVC模式应用于ASP.NET和C＃开发的世界。 在ASP.NET Core MVC中，控制器是C#类，通常派生自Microsoft AspNetCore.Mvc.Controller类。 从Controller派生的类中的每个公共方法都是与URL相关联的行动方法。 当请求发送到与行动方法相关联的URL时，执行该行动方法中的语句，以便对域模型执行某些操作，然后选择要向客户端显示的视图。
 图3-1显示了控制器，模型和视图之间的交互。
 
-![控制器，模型和视图之间的交互](/imgs/fig.3.1.png)
+![控制器，模型和视图之间的交互](/imgs/fig.3-1.png)
 
 图3-1 控制器，模型和视图之间的交互。
 
