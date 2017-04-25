@@ -931,5 +931,243 @@ prod => EvaluateProduct（prod）
 return result;
 }
 
-您不需要在代码中非得使用lambda表达式不可，但是它能以可读和清晰的方式让复杂函数更加整洁。 我非常喜欢他们，你会看到，在这本书中我用了很多。
+您不需要非使用lambda表达式不可，但是它能以可读和清晰的方式让复杂函数更加整洁。 我非常喜欢他们，你会看到，在这本书中我用了很多。
 
+### 使用Lambda 表达式方法和属性
+C#6已经扩展了对lambda表达式的支持，以便它们可以用于实现方法和属性。 在MVC开发中，尤其是在编写控制器的时候，你会经常使用包含一个选择要显示的数据和要呈现的视图的单个语句的方法。 在清单4-31中，我已经重写了Index操作方法，使其遵循这个常见模式。
+
+Listing 4-31. 创建通用的 Action 模式
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+using System.Linq;
+
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+return View(Product.GetProducts().Select(p => p?.Name));
+}
+}
+}
+```
+这个Action方法从静态Product.GetProducts方法获取Product对象的集合,并使用LINQ来投影Name属性的值，然后将其用作默认视图的视图模型。 如果运行应用程序，您将在浏览器窗口中看到以下输出：
+
+Kayak
+Lifejacket
+
+浏览器窗口中也会有一个空的列表项，因为GetProducts方法在其结果中包含一个空引用，但对本章的这一部分无关紧要。当一个方法体由单个语句组成时，它可以 被重写为lambda表达式如代码4-32所示。
+
+Listing 4-32. 使用Lambda表达式的Action 方法
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+using System.Linq;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() =>
+View(Product.GetProducts().Select(p => p?.Name));
+}
+}
+
+方法的Lambda表达式忽略return关键字，并使用=>（转到）将方法签名（包括其参数）与其实现相关联。 清单4-32所示的Index方法的工作方式与清单4-31所示的方法相同，但更简洁。也可以使用相同的基本方法来定义属性。 列表4-33显示了添加一个使用lambda表达式给Product类的属性。
+
+Listing 4-33. Lambda 表达式属性
+```cs
+namespace LanguageFeatures.Models {
+public class Product {
+public Product(bool stock = true) {
+InStock = stock;
+}
+
+public string Name { get; set; }
+public string Category { get; set; } = "Watersports";
+public decimal? Price { get; set; }
+public Product Related { get; set; }
+public bool InStock { get; }
+public bool NameBeginsWithS => Name?[0] == 'S';
+public static Product[] GetProducts() {
+Product kayak = new Product {
+Name = "Kayak",
+Category = "Water Craft",
+Price = 275M
+};
+Product lifejacket = new Product(false) {
+Name = "Lifejacket",
+Price = 48.95M
+};
+kayak.Related = lifejacket;
+return new Product[] { kayak, lifejacket, null };
+}
+}
+}
+
+```
+
+## 使用类型推断和匿名类型
+
+C# var关键字允许您定义一个局部变量而不显式指定变量类型，如清单4-34所示。 这称为类型推断或隐式类型。
+
+Listing 4-34. 使用类型推断
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+using System.Linq;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+var names = new [] { "Kayak", "Lifejacket", "Soccer ball" };
+return View(names);
+}
+}
+}
+```
+这不是名称变量没有类型; 相反，我要求编译器推断类型。 编译器检查数组声明，并确定它是一个字符串数组。 运行示例生成以下输出：
+
+Kayak
+Lifejacket
+Soccer ball
+
+### 使用匿名类型
+
+通过组合对象初始化器和类型推断，我可以创建简单的视图模型对象，这些对象在控制器和视图之间传输数据非常有用，而不必定义类或结构体，如代码清单4-35所示。
+
+
+Listing 4-35. 创建匿名类型
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+using System.Linq;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+var products = new [] {
+new { Name = "Kayak", Price = 275M },
+new { Name = "Lifejacket", Price = 48.95M },
+new { Name = "Soccer ball", Price = 19.50M },
+new { Name = "Corner flag", Price = 34.95M }
+};
+return View(products.Select(p => p.Name));
+}
+}
+}
+```
+product数组中的每个对象都是一个匿名类型的对象。 这并不意味着它在JavaScript变量是动态的意义上是动态的。 这仅仅意味着类型定义将由编译器自动创建。 强类型仍然执行。 例如，您可以获取并设置在初始化程序中定义的属性。 如果运行该示例，您将在浏览器窗口中看到以下输出：
+
+Kayak
+Lifejacket
+Soccer ball
+Corner flag
+
+C＃编译器根据初始化程序中参数的名称和类型生成类。具有相同属性名称和类型的两个匿名类型的对象将被分配给相同的自动生成的类。 这意味着产品数组中的所有对象将具有相同的类型，因为它们定义了相同的属性。
+
+提示: 我必须使用var关键字来定义匿名类型对象的数组，因为在编译代码之前不会创建类型，所以我不知道要使用的类型的名称。 匿名类型对象数组中的元素必须都定义相同的属性; 否则，编译器无法知道数组是什么类型。
+
+为了演示这一问题，我已经从清单4-36中的示例更改了输出，以便它显示了类型名称，而不是Name属性的值。
+
+
+Listing 4-36. 显示匿名类型名
+
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+using System.Linq;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+var products = new [] {
+new { Name = "Kayak", Price = 275M },
+new { Name = "Lifejacket", Price = 48.95M },
+new { Name = "Soccer ball", Price = 19.50M },
+new { Name = "Corner flag", Price = 34.95M }
+};
+return View(products.Select(p => p.GetType().Name));
+}
+}
+}
+```
+
+数组中的所有对象都已分配相同的类型，如果运行该示例，则可以看到该对象。 类型名称不是用户友好的，但不须直接使用，您看到的可能与以下输出中显示的不同：
+
+<>f__AnonymousType0`2
+<>f__AnonymousType0`2
+<>f__AnonymousType0`2
+<>f__AnonymousType0`2
+
+## 使用异步方法
+
+C#中最新增加一个语言特性是改进异步方法的处理方式。 异步方法在后台工作，并在完成后通知您，当执行后台工作时，允许您的代码照顾其他业务。 异步方法是从代码中消除瓶颈的重要工具，允许应用程序利用多个处理器和多处理器核心并行执行工作。在MVC中，可以使用异步方法来提高应用程序的整体性能，它允许服务器在调度和执行请求的方式上具有更大的灵活性。 两个C#关键字-async 和 await用于异步执行工作。
+为了准备这个部分，我需要在示例项目中添加一个新的.NET程序集，以便我可以进行异步HTTP请求。 清单4-37显示了我对project.json文件的依赖关系部分的添加。
+
+Listing 4-37. 添加依赖的程序集
+```cs
+"dependencies": {
+"Microsoft.NETCore.App": {
+"version": "1.0.0",
+"type": "platform"
+},
+"Microsoft.AspNetCore.Diagnostics": "1.0.0",
+"Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
+"Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
+"Microsoft.Extensions.Logging.Console": "1.0.0",
+"Microsoft.AspNetCore.Mvc": "1.0.0",
+"System.Net.Http": "4.1.0"
+},
+```
+
+当保存project.json文件时，Visual Studio将下载System.Net.Http程序集并将其添加到项目中。 我在第6章更详细地描述这个过程。
+
+
+### 直接使用任务
+
+C#和.NET对异步方法有很好的支持，但代码往往是冗长的，而不习惯于并行编程的开发人员常常因不寻常的语法陷入僵局。 例如，清单4-38显示了一个称为GetPageLength的异步方法，它在MyAsyncMethods类中定义，并添加到名为MyAsyncMethods.cs的类文件中的Models文件夹中。
+
+Listing 4-38. MyAsyncMethods.cs
+```cs
+using System.Net.Http;
+using System.Threading.Tasks;
+namespace LanguageFeatures.Models {
+public class MyAsyncMethods {
+public static Task<long?> GetPageLength() {
+HttpClient client = new HttpClient();
+var httpTask = client.GetAsync("http://apress.com");
+// we could do other things here while the HTTP request is performed
+return httpTask.ContinueWith((Task<HttpResponseMessage> antecedent) => {
+return antecedent.Result.Content.Headers.ContentLength;
+});
+}
+}
+}    
+```
+
+此方法使用System.Net.Http.HttpClient对象请求Apress主页的内容页面并返回其长度。 .NET表示将作为Task异步执行的工作。 基于后台工作产生的结果，任务对象是强类型的。 所以，当我调用HttpClient.GetAsync方法，我得到的是一个Task <HttpResponseMessage>。 这告诉我，请求将在后台执行，请求的结果将是一个HttpResponseMessage对象。
+
+提示: 当我使用像background这样的词时跳过了很多细节，以便提出要点,这对于MVC的世界很重要。 对异步方法和并行编程的.NET支持一般是非常好的，如果要创建可以利用多核和多处理器硬件的真正高性能应用程序，我们鼓励您更多地了解它。 当我介绍不同的功能时，您将看到MVC如何在本书中创建异步Web应用程序。
+
+令大多数程序员感到困惑的部分是延续(Continuation)，这指的是在后台任务完成时指定要发生什么。 在这个例子中，我使用了ContinueWith方法来处理从HttpClient获取的HttpResponseMessage对象。
+GetAsync方法，我使用一个lambda表达式返回一个属性的值，该属性包含从Apress Web服务器获取的内容的长度。 这是Continuation代码：
+
+```cs
+return httpTask.ContinueWith((Task<HttpResponseMessage> antecedent) => {
+return antecedent.Result.Content.Headers.ContentLength;
+});
+```
+
+请注意，我使用return关键字两次。 这是导致混乱的部分。 第一次使用return关键字指定我正在返回一个Task <HttpResponseMessage> 对象，当任务完成时，它将返回ContentLength头的长度。 ContentLength标头返回一个long？result（一个可空的long值），这表示我的GetPageLength方法的结果是Task <long？>，像这样：
+...
+public static Task<long?> GetPageLength() {
+...
+
+如果看不明白，不要担心，别人也和你差不多。 正是因为这个原因 Microsoft将关键字添加到C#中以简化异步方法。
+
+##使用async 和await 关键字
+
+Microsoft向C＃引入了两个关键字，它们专门用于简化使用异步方法（如HttpClient.GetAsync）。 关键字是异步的，等待，您可以看到我如何使用它们来简化清单4-39中的示例方法。...
