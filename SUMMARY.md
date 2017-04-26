@@ -7,3 +7,5 @@
     * [MVC 模式，项目和约定](/Part1/chapter3.md)
     * [C# 关键特征](/Part1/chapter4.md)
 *  [ASP.NET Core Mvc 详细内容](/Part2/index.md)
+    * [配置应用程序](/Part2/chapter14-0.md)
+        * [准备示例项目](/Part2/chapter14-1.md)
