@@ -1170,4 +1170,108 @@ public static Task<long?> GetPageLength() {
 
 ##使用async 和await 关键字
 
-Microsoft向C＃引入了两个关键字，它们专门用于简化使用异步方法（如HttpClient.GetAsync）。 关键字是异步的，等待，您可以看到我如何使用它们来简化清单4-39中的示例方法。...
+Microsoft向C#引入了两个关键字，它们专门用于简化使用异步方法（如HttpClient.GetAsync）。 关键字是async、await，您可以看到我如何使用它们来简化清单4-39中的示例方法。
+
+
+Listing 4-39. 使用async 和 await 关键字
+```cs
+using System.Net.Http;
+using System.Threading.Tasks;
+namespace LanguageFeatures.Models {
+public class MyAsyncMethods {
+public async static Task<long?> GetPageLength() {
+HttpClient client = new HttpClient();
+var httpMessage = await client.GetAsync("http://apress.com");
+return httpMessage.Content.Headers.ContentLength;
+}
+}
+}
+```
+调用异步方法时，我使用了await关键字。这告诉C#编译器，我想等待GetAsync方法返回的任务的结果，然后以相同的方法继续执行其他语句。应用await关键字意味着我可以将GetAsync方法的结果视为一种常规方法，并将HttpResponseMessage对象分配给一个变量。而且，更好的是，我可以用正常的方式使用return关键字来生成其他方法的结果 - 在这里是ContentLength属性的值。这是很自然的表达方式，我不必担心ContinueWith方法和return关键字的多次使用。当您使用await关键字时，还必须将async关键字添加到方法声明中，如我在示例中所做的那样。方法结果类型不会改变 - 我的示例GetPageLength方法仍然返回一个Task <long？>。这是因为使用一些聪明的编译器技巧实现等待和异步，它们允许更自然的语法，但是使用它们时，并不会更改方法中的逻辑。调用GetPageLength方法的人还需要处理一个 Task <long？>结果是因为后台还有一个可以产生可空的long类型的任务，尽管这个程序员也可以选择使用await和async关键字。
+
+这种模式贯穿到MVC控制器中，这使得编写异步动作方法变得很容易，如清单4-40所示。
+
+Listing 4-40. 定义异步Action方法
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public async Task<ViewResult> Index() {
+long? length = await MyAsyncMethods.GetPageLength();
+return View(new string[] { $"Length: {length}" });
+}
+}
+}
+```
+
+我将Index操作方法的结果更改为Task<ViewResult>，它告诉MVC，action方法将返回一个任务，该任务会在完成后产生一个ViewResult对象，提供应该呈现的视图的详细信息和它需要的数据。 我已经将async关键字添加到方法的定义中，这允许我在调用MyAsyncMethods.GetPathLength方法时使用await关键字。 MVC和.NET负责处理这些Continuation，这些是易于编写，易于阅读和易于维护的异步代码。 如果运行应用程序，您将看到类似于以下内容的输出：
+
+Length: 62164
+
+## 获取名字
+
+Web应用程序开发中有许多任务需要引用参数，变量，方法或类的名称。 常见的示例包括在处理来自用户的输入时抛出异常或创建验证错误。 传统的方法是使用名称硬编码的字符串值，如清单4-41所示。
+
+Listing 4-41. 硬编码名字
+```cs
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+using System.Linq;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+var products = new [] {
+new { Name = "Kayak", Price = 275M },
+new { Name = "Lifejacket", Price = 48.95M },
+new { Name = "Soccer ball", Price = 19.50M },
+new { Name = "Corner flag", Price = 34.95M }
+};
+return View(products.Select(p => $"Name: {p.Name}, Price: {p.Price}"));
+}
+}
+}
+```
+对LINQ Select方法的调用生成一个字符串序列，每个字符串都包含对Name和Price属性的硬编码引用。 运行应用程序在浏览器窗口中生成以下输出：
+```
+Name: Kayak, Price: 275
+Name: Lifejacket, Price: 48.95
+Name: Soccer ball, Price: 19.50
+Name: Corner flag, Price: 34.95
+```
+这种方法的问题是它容易出错，因为名称有可能拼写错误或代码重构之后字符串中的名称未正确更新。 结果可能会导致误导，向用户显示的消息可能会有问题。 C# 6引入了表达式的名称，编译器负责生成一个名称字符串，如清单4-42所示。
+
+Listing 4-42. 使用nameof 表达式
+
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using LanguageFeatures.Models;
+using System;
+using System.Linq;
+namespace LanguageFeatures.Controllers {
+public class HomeController : Controller {
+public ViewResult Index() {
+var products = new [] {
+new { Name = "Kayak", Price = 275M },
+new { Name = "Lifejacket", Price = 48.95M },
+new { Name = "Soccer ball", Price = 19.50M },
+new { Name = "Corner flag", Price = 34.95M }
+};
+return View(products.Select(p =>
+$"{nameof(p.Name)}: {p.Name}, {nameof(p.Price)}: {p.Price}"));
+}
+}
+}
+
+编译器处理诸如p.Name的引用，以便只有最后一部分包含在字符串中，产生与前面示例相同的输出。 Visual Studio为名称表达式提供IntelliSense支持，因此将提示您选择引用，并在重构代码时正确更新表达式。 由于编译器负责处理nameof，因此使用无效的引用将导致编译器错误，从而防止错误或过期的引用异常通知。
+
+本章小结
+
+本章概述了能让程序员提高效率的MVC关键的C#语言特性。 C#是一种灵活的语言，通常有不同的方法来解决一个问题，但这里所介绍的是您在Web应用程序开发过程中最常遇到的功能，并且在本书的整个示例中都可以看到。 在下一章中，我将介绍Razor视图引擎，并介绍如何在MVC Web应用程序中生成动态内容。
+
